@@ -156,14 +156,17 @@ export const StudentDashboardScreen: React.FC<Props> = ({ navigation }) => {
             {quickActions.map((action) => (
               <TouchableOpacity
                 key={action.id}
-                style={styles.actionCard}
+                style={[
+                  styles.actionCard,
+                  { backgroundColor: action.color + "15" },
+                ]}
                 onPress={() => navigation.navigate(action.screen)}
                 activeOpacity={0.7}
               >
                 <View
                   style={[
                     styles.actionIcon,
-                    { backgroundColor: action.color + "20" },
+                    { backgroundColor: action.color + "30" },
                   ]}
                 >
                   <Ionicons name={action.icon} size={28} color={action.color} />
@@ -294,11 +297,9 @@ const styles = StyleSheet.create({
   },
   actionCard: {
     width: "47%",
-    backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
     alignItems: "center",
-    ...theme.shadows.small,
   },
   actionIcon: {
     width: 56,

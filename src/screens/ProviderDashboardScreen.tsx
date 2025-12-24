@@ -111,11 +111,14 @@ export const ProviderDashboardScreen: React.FC<Props> = ({ navigation }) => {
         {/* Stats */}
         <View style={styles.statsContainer}>
           {stats.map((stat, index) => (
-            <View key={index} style={styles.statCard}>
+            <View
+              key={index}
+              style={[styles.statCard, { backgroundColor: stat.color + "15" }]}
+            >
               <View
                 style={[
                   styles.statIcon,
-                  { backgroundColor: stat.color + "20" },
+                  { backgroundColor: stat.color + "30" },
                 ]}
               >
                 <Ionicons
@@ -137,14 +140,17 @@ export const ProviderDashboardScreen: React.FC<Props> = ({ navigation }) => {
             {features.map((feature, index) => (
               <TouchableOpacity
                 key={index}
-                style={styles.featureCard}
+                style={[
+                  styles.featureCard,
+                  { backgroundColor: feature.color + "15" },
+                ]}
                 activeOpacity={0.7}
                 onPress={() => handleFeatureClick(feature.title)}
               >
                 <View
                   style={[
                     styles.featureIcon,
-                    { backgroundColor: feature.color + "20" },
+                    { backgroundColor: feature.color + "30" },
                   ]}
                 >
                   <Ionicons
@@ -297,11 +303,9 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
     alignItems: "center",
-    ...theme.shadows.small,
   },
   statIcon: {
     width: 48,
@@ -336,11 +340,9 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     width: "47%",
-    backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
     alignItems: "center",
-    ...theme.shadows.small,
   },
   featureIcon: {
     width: 56,

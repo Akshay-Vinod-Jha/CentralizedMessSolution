@@ -45,7 +45,7 @@ const roleConfigs: Record<UserRole, RoleConfig> = {
     title: "Student",
     icon: "school",
     color: theme.colors.primary,
-    gradient: [theme.colors.primary, "#6366f1"],
+    gradient: [theme.colors.primary, theme.colors.primaryDark],
     benefits: [
       {
         icon: "wallet",
@@ -60,7 +60,7 @@ const roleConfigs: Record<UserRole, RoleConfig> = {
     title: "Mess Owner",
     icon: "restaurant",
     color: theme.colors.secondary,
-    gradient: [theme.colors.secondary, "#059669"],
+    gradient: [theme.colors.secondary, theme.colors.secondaryLight],
     benefits: [
       {
         icon: "receipt",
@@ -73,9 +73,9 @@ const roleConfigs: Record<UserRole, RoleConfig> = {
   },
   provider: {
     title: "Food Provider",
-    icon: "storefront",
+    icon: "bicycle",
     color: theme.colors.accent,
-    gradient: [theme.colors.accent, "#f59e0b"],
+    gradient: [theme.colors.accent, theme.colors.accentLight],
     benefits: [
       { icon: "bicycle", text: "Receive delivery requests from students" },
       { icon: "time", text: "Flexible delivery schedule" },
@@ -209,7 +209,7 @@ export const RoleDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               placeholder="Enter your full name"
               value={name}
               onChangeText={setName}
-              placeholderTextColor={theme.colors.textLight}
+              placeholderTextColor={theme.colors.textMuted}
               autoCapitalize="words"
             />
           </View>
@@ -231,7 +231,7 @@ export const RoleDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
-              placeholderTextColor={theme.colors.textLight}
+              placeholderTextColor={theme.colors.textMuted}
             />
           </View>
 
@@ -305,84 +305,83 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: Platform.OS === "ios" ? 60 : 40,
-    paddingBottom: theme.spacing.xxl,
-    paddingHorizontal: theme.spacing.lg,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingBottom: theme.spacing.xxxl,
+    paddingHorizontal: theme.spacing.xl,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
   },
   headerContent: {
     alignItems: "center",
   },
   iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
   headerTitle: {
-    fontSize: 32,
-    fontWeight: "bold",
+    ...theme.typography.display,
     color: "#fff",
     marginBottom: theme.spacing.sm,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.9)",
+    ...theme.typography.body,
+    color: "rgba(255, 255, 255, 0.85)",
     textAlign: "center",
   },
   benefitsSection: {
-    padding: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
+    padding: theme.spacing.xl,
+    paddingTop: theme.spacing.xxl,
   },
   sectionTitle: {
-    fontSize: 20,
+    ...theme.typography.h2,
     fontWeight: "700",
     color: theme.colors.text,
     marginBottom: theme.spacing.lg,
   },
   benefitsList: {
-    gap: theme.spacing.md,
+    gap: theme.spacing.lg,
   },
   benefitItem: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.surface,
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
-    ...theme.shadows.small,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   benefitIcon: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: theme.spacing.md,
+    marginRight: theme.spacing.lg,
   },
   benefitText: {
     flex: 1,
-    fontSize: 15,
+    ...theme.typography.body,
     color: theme.colors.text,
-    lineHeight: 20,
   },
   formSection: {
-    padding: theme.spacing.lg,
-    paddingTop: theme.spacing.md,
+    padding: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
   },
   inputWrapper: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
   },
   inputLabel: {
     flexDirection: "row",
@@ -390,49 +389,42 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   labelIcon: {
-    marginRight: theme.spacing.xs,
+    marginRight: theme.spacing.sm,
   },
   labelText: {
-    fontSize: 14,
-    fontWeight: "600",
+    ...theme.typography.subtitle,
     color: theme.colors.text,
   },
   input: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    fontSize: 16,
+    ...theme.components.input,
+    ...theme.typography.body,
     color: theme.colors.text,
-    ...theme.shadows.small,
   },
   continueButton: {
+    ...theme.components.button,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md + 4,
-    marginTop: theme.spacing.md,
+    marginTop: theme.spacing.lg,
     gap: theme.spacing.sm,
-    ...theme.shadows.medium,
+    ...theme.shadows.small,
   },
   buttonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   continueButtonText: {
-    fontSize: 18,
-    fontWeight: "700",
+    ...theme.typography.button,
     color: "#fff",
   },
   footer: {
-    padding: theme.spacing.lg,
-    paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.xxl,
+    padding: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxxl,
     alignItems: "center",
   },
   footerText: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
+    ...theme.typography.captionSmall,
+    color: theme.colors.textMuted,
     textAlign: "center",
-    lineHeight: 16,
   },
 });
