@@ -8,6 +8,7 @@ import React, {
 import { Wallet, TokenTransaction } from "../types";
 import { getWallet, saveWallet, updateWalletBalance } from "../utils/storage";
 import { useAuth } from "./AuthContext";
+import { createDefaultWallet } from "../utils/mockData";
 
 interface WalletContextType {
   wallet: Wallet | null;
@@ -46,22 +47,9 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({
       setIsLoading(true);
       let walletData = await getWallet();
 
-      // Initialize wallet if doesn't exist
+      // Initialize wallet if doesn't exist using default data
       if (!walletData && user) {
-        walletData = {
-          userId: user.id,
-          balance: 50, // Starting balance of 50 tokens
-          transactions: [
-            {
-              id: `txn-${Date.now()}`,
-              userId: user.id,
-              type: "credit",
-              amount: 50,
-              description: "Welcome bonus",
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        };
+        walletData = createDefaultWallet(user.id, user.role);
         await saveWallet(walletData);
       }
 

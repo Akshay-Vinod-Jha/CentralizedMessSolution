@@ -1,0 +1,35 @@
+/* Global styles to prevent weird button highlights */
+
+/* Remove tap highlight on mobile browsers */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Remove outline on buttons and interactive elements */
+button,
+a,
+input,
+textarea,
+select,
+[role="button"] {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Remove focus visible rings */
+*:focus-visible {
+  outline: none !important;
+}
+
+/* Remove default button styles */
+button {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+}

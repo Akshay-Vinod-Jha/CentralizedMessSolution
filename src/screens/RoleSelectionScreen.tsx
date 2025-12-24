@@ -5,15 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  TextInput,
-  Alert,
+  Platform,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../utils/theme";
-import { useAuth } from "../context/AuthContext";
-import { UserRole, User } from "../types";
-import { saveWallet } from "../utils/storage";
+import { UserRole } from "../types";
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -44,7 +41,7 @@ const roleOptions: RoleOption[] = [
   },
   {
     role: "provider",
-    icon: "storefront-outline",
+    icon: "bicycle-outline",
     title: "Food Provider",
     description: "Offer tiffin services, manage availability",
     color: theme.colors.accent,
@@ -53,77 +50,13 @@ const roleOptions: RoleOption[] = [
 
 export const RoleSelectionScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const { login, setUserRole } = useAuth();
 
-  const handleContinue = async () => {
-    if (!selectedRole) {
-      Alert.alert("Error", "Please select a role");
-      return;
-    }
-
-    if (!name.trim()) {
-      Alert.alert("Error", "Please enter your name");
-      return;
-    }
-
-    if (!email.trim()) {
-      Alert.alert("Error", "Please enter your email");
-      return;
-    }
-
-    try {
-      // Create user object
-      const user: User = {
-        id: `user-${Date.now()}`,
-        name: name.trim(),
-        email: email.trim(),
-        role: selectedRole,
-      };
-
-      // Initialize wallet for students
-      if (selectedRole === "student") {
-        const wallet = {
-          userId: user.id,
-          balance: 50,
-          transactions: [
-            {
-              id: `txn-${Date.now()}`,
-              userId: user.id,
-              type: "credit" as const,
-              amount: 50,
-              description: "Welcome bonus",
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        };
-        await saveWallet(wallet);
-      }
-
-      // Login user
-      await login(user);
-
-      // Navigate to appropriate dashboard
-      navigateToDashboard(selectedRole);
-    } catch (error) {
-      console.error("Error during role selection:", error);
-      Alert.alert("Error", "Failed to create account. Please try again.");
-    }
-  };
-
-  const navigateToDashboard = (role: UserRole) => {
-    switch (role) {
-      case "student":
-        navigation.replace("StudentDashboard");
-        break;
-      case "mess-owner":
-        navigation.replace("MessOwnerDashboard");
-        break;
-      case "provider":
-        navigation.replace("ProviderDashboard");
-        break;
-    }
+  const handleRoleSelect = (role: UserRole) => {
+    setSelectedRole(role);
+    // Navigate to role-specific detail screen after a short delay for visual feedback
+    setTimeout(() => {
+      navigation.navigate("RoleDetails", { role });
+    }, 300);
   };
 
   return (
@@ -137,95 +70,73 @@ export const RoleSelectionScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       <View style={styles.rolesContainer}>
-        {roleOptions.map((option) => (
-          <TouchableOpacity
-            key={option.role}
-            style={[
-              styles.roleCard,
-              selectedRole === option.role && {
-                borderColor: option.color,
-                borderWidth: 2,
-                backgroundColor: option.color + "10",
-              },
-            ]}
-            onPress={() => setSelectedRole(option.role)}
-            activeOpacity={0.7}
-          >
-            <View
+        {roleOptions.map((option) => {
+          const isSelected = selectedRole === option.role;
+          return (
+            <TouchableOpacity
+              key={option.role}
               style={[
-                styles.roleIcon,
-                { backgroundColor: option.color + "20" },
+                styles.roleCard,
+                isSelected && [
+                  styles.roleCardSelected,
+                  { backgroundColor: option.color },
+                ],
               ]}
+              onPress={() => handleRoleSelect(option.role)}
+              activeOpacity={0.85}
+              // Disable Android ripple effect
+              {...(Platform.OS === "android" && {
+                android_ripple: null,
+                background: undefined,
+              })}
             >
-              <Ionicons name={option.icon} size={32} color={option.color} />
-            </View>
+              <View
+                style={[
+                  styles.roleIcon,
+                  isSelected
+                    ? styles.roleIconSelected
+                    : { backgroundColor: option.color + "15" },
+                ]}
+              >
+                <Ionicons
+                  name={option.icon}
+                  size={36}
+                  color={isSelected ? theme.colors.surface : option.color}
+                />
+              </View>
 
-            <View style={styles.roleInfo}>
-              <Text style={styles.roleTitle}>{option.title}</Text>
-              <Text style={styles.roleDescription}>{option.description}</Text>
-            </View>
+              <View style={styles.roleInfo}>
+                <Text
+                  style={[
+                    styles.roleTitle,
+                    isSelected && styles.roleTitleSelected,
+                  ]}
+                >
+                  {option.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.roleDescription,
+                    isSelected && styles.roleDescriptionSelected,
+                  ]}
+                >
+                  {option.description}
+                </Text>
+              </View>
 
-            {selectedRole === option.role && (
               <Ionicons
-                name="checkmark-circle"
+                name={isSelected ? "checkmark-circle" : "chevron-forward"}
                 size={24}
-                color={option.color}
+                color={isSelected ? theme.colors.surface : option.color}
               />
-            )}
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
-      {selectedRole && (
-        <View style={styles.formContainer}>
-          <Text style={styles.formTitle}>Your Details</Text>
-
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="person-outline"
-              size={20}
-              color={theme.colors.textSecondary}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your name"
-              value={name}
-              onChangeText={setName}
-              placeholderTextColor={theme.colors.textLight}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="mail-outline"
-              size={20}
-              color={theme.colors.textSecondary}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholderTextColor={theme.colors.textLight}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={handleContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color={theme.colors.surface}
-            />
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Select a role to continue</Text>
+      </View>
     </ScrollView>
   );
 };
@@ -236,14 +147,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   contentContainer: {
-    padding: theme.spacing.lg,
+    padding: theme.spacing.xl,
+    paddingTop: theme.spacing.xxxl,
   },
   header: {
-    marginBottom: theme.spacing.xl,
-    marginTop: theme.spacing.xxl,
+    marginBottom: theme.spacing.xxxl,
   },
   title: {
-    ...theme.typography.h1,
+    ...theme.typography.display,
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
@@ -252,18 +163,25 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   rolesContainer: {
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
+    gap: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
   },
   roleCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: "transparent",
+    borderColor: theme.colors.border,
     ...theme.shadows.small,
+    ...(Platform.OS === "web" && {
+      outlineStyle: "none",
+    }),
+  },
+  roleCardSelected: {
+    borderColor: "transparent",
+    ...theme.shadows.medium,
   },
   roleIcon: {
     width: 56,
@@ -271,7 +189,10 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: theme.spacing.md,
+    marginRight: theme.spacing.lg,
+  },
+  roleIconSelected: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
   },
   roleInfo: {
     flex: 1,
@@ -281,49 +202,23 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
   },
+  roleTitleSelected: {
+    color: theme.colors.text,
+  },
   roleDescription: {
-    ...theme.typography.body,
+    ...theme.typography.bodySmall,
     color: theme.colors.textSecondary,
   },
-  formContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    ...theme.shadows.small,
+  roleDescriptionSelected: {
+    color: "rgba(255, 255, 255, 0.85)",
   },
-  formTitle: {
-    ...theme.typography.h3,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.md,
-  },
-  inputContainer: {
-    flexDirection: "row",
+  footer: {
     alignItems: "center",
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
+    marginTop: theme.spacing.xxl,
+    marginBottom: theme.spacing.xl,
   },
-  input: {
-    flex: 1,
-    marginLeft: theme.spacing.sm,
-    ...theme.typography.body,
-    color: theme.colors.text,
-  },
-  continueButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.md,
-    paddingVertical: theme.spacing.md,
-    marginTop: theme.spacing.sm,
-    gap: theme.spacing.sm,
-  },
-  continueButtonText: {
-    ...theme.typography.subtitle,
-    color: theme.colors.surface,
-    fontWeight: "600",
+  footerText: {
+    ...theme.typography.caption,
+    color: theme.colors.textMuted,
   },
 });

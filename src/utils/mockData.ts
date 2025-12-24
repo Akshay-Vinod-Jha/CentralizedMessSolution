@@ -1,4 +1,183 @@
-import { Mess, MenuItem, DietTag } from "../types";
+import {
+  Mess,
+  MenuItem,
+  DietTag,
+  UserRole,
+  Wallet,
+  Order,
+  TokenTransaction,
+} from "../types";
+
+// Default data for new users based on their role
+export const defaultUserData = {
+  student: {
+    tokenBalance: 100,
+    welcomeBonus: 100,
+    transactions: [
+      {
+        type: "credit" as const,
+        amount: 100,
+        description: "Welcome bonus - Start your food journey!",
+        daysAgo: 0,
+      },
+      {
+        type: "debit" as const,
+        amount: -15,
+        description: "Order from Sunshine Mess - Lunch",
+        daysAgo: 1,
+      },
+      {
+        type: "credit" as const,
+        amount: 50,
+        description: "Monthly token recharge",
+        daysAgo: 2,
+      },
+      {
+        type: "debit" as const,
+        amount: -8,
+        description: "Order from Spice Garden - Breakfast",
+        daysAgo: 3,
+      },
+      {
+        type: "transfer-sent" as const,
+        amount: -10,
+        description: "Transferred to friend",
+        daysAgo: 5,
+      },
+      {
+        type: "transfer-received" as const,
+        amount: 20,
+        description: "Received from roommate",
+        daysAgo: 7,
+      },
+    ],
+    // Sample orders for demo
+    sampleOrders: [
+      {
+        messName: "Sunshine Mess",
+        items: [
+          { name: "Paneer Butter Masala", quantity: 1, tokensPerItem: 4 },
+        ],
+        totalTokens: 4,
+        status: "delivered" as const,
+        daysAgo: 2,
+      },
+    ],
+  },
+  "mess-owner": {
+    tokenBalance: 0,
+    stats: {
+      todayOrders: 12,
+      tokensEarned: 45,
+      activeOrders: 3,
+      totalRevenue: 245,
+      totalOrders: 156,
+    },
+    sampleOrders: [
+      {
+        id: "order-demo-1",
+        userId: "student-demo-1",
+        messName: "My Mess",
+        items: [
+          { name: "Paneer Butter Masala", quantity: 2, tokensPerItem: 4 },
+          { name: "Roti", quantity: 4, tokensPerItem: 1 },
+        ],
+        totalTokens: 12,
+        status: "preparing" as const,
+        orderType: "normal" as const,
+        deliveryRequested: false,
+        hoursAgo: 0.5,
+      },
+      {
+        id: "order-demo-2",
+        userId: "student-demo-2",
+        messName: "My Mess",
+        items: [
+          { name: "Dal Tadka", quantity: 1, tokensPerItem: 3 },
+          { name: "Rice", quantity: 1, tokensPerItem: 2 },
+        ],
+        totalTokens: 5,
+        status: "confirmed" as const,
+        orderType: "packed" as const,
+        deliveryRequested: true,
+        hoursAgo: 1,
+      },
+      {
+        id: "order-demo-3",
+        userId: "student-demo-3",
+        messName: "My Mess",
+        items: [{ name: "Chicken Biryani", quantity: 1, tokensPerItem: 6 }],
+        totalTokens: 6,
+        status: "ready" as const,
+        orderType: "normal" as const,
+        deliveryRequested: false,
+        hoursAgo: 0.25,
+      },
+    ],
+    welcomeMessage: "Welcome! You have orders to manage.",
+  },
+  provider: {
+    tokenBalance: 85,
+    stats: {
+      availableMeals: 12,
+      preOrders: 5,
+      tokensEarned: 85,
+      completedOrders: 23,
+      rating: 4.5,
+    },
+    samplePreOrders: [
+      {
+        id: "preorder-1",
+        studentName: "Rahul Kumar",
+        meal: "Veg Thali",
+        quantity: 2,
+        tokens: 12,
+        deliveryTime: "1:00 PM",
+        status: "pending" as const,
+        hoursFromNow: 2,
+      },
+      {
+        id: "preorder-2",
+        studentName: "Priya Sharma",
+        meal: "Chicken Biryani",
+        quantity: 1,
+        tokens: 8,
+        deliveryTime: "1:30 PM",
+        status: "confirmed" as const,
+        hoursFromNow: 2.5,
+      },
+      {
+        id: "preorder-3",
+        studentName: "Amit Verma",
+        meal: "Paneer Wrap",
+        quantity: 3,
+        tokens: 15,
+        deliveryTime: "2:00 PM",
+        status: "pending" as const,
+        hoursFromNow: 3,
+      },
+    ],
+    recentOrders: [
+      {
+        id: "completed-1",
+        studentName: "Sarah Ali",
+        meal: "Dal Rice Combo",
+        tokens: 6,
+        deliveredAt: "Yesterday",
+        rating: 5,
+      },
+      {
+        id: "completed-2",
+        studentName: "John Doe",
+        meal: "Roti Sabzi",
+        tokens: 10,
+        deliveredAt: "2 days ago",
+        rating: 4,
+      },
+    ],
+    welcomeMessage: "Welcome! You have 5 pre-orders to prepare.",
+  },
+};
 
 export const mockMesses: Mess[] = [
   {
@@ -251,4 +430,65 @@ export const initializeMockData = async () => {
   } catch (error) {
     console.error("Error initializing mock data:", error);
   }
+};
+
+// Helper function to create initial wallet for user based on role
+export const createDefaultWallet = (userId: string, role: UserRole): Wallet => {
+  const defaults = defaultUserData[role];
+  const balance = defaults.tokenBalance;
+  const transactions: TokenTransaction[] = [];
+  const now = new Date();
+
+  // Add all default transactions for students
+  if (role === "student" && defaults.transactions) {
+    defaults.transactions.forEach((txn, index) => {
+      const txnDate = new Date(
+        now.getTime() - (txn.daysAgo || 0) * 24 * 60 * 60 * 1000
+      );
+      transactions.push({
+        id: `txn-${Date.now()}-${index}`,
+        userId,
+        type: txn.type,
+        amount: txn.amount,
+        description: txn.description,
+        timestamp: txnDate.toISOString(),
+      });
+    });
+  }
+
+  return {
+    userId,
+    balance,
+    transactions: transactions.reverse(), // Most recent first
+  };
+};
+
+// Helper function to create sample orders for mess owners
+export const createSampleOrders = (userId: string, messId: string): Order[] => {
+  const sampleOrders = defaultUserData["mess-owner"].sampleOrders;
+  const now = new Date();
+
+  return sampleOrders.map((sample, index) => {
+    const orderTime = new Date(
+      now.getTime() - sample.hoursAgo * 60 * 60 * 1000
+    );
+
+    return {
+      id: `${sample.id}-${userId}`,
+      userId: `student-${userId}-${index}`,
+      messId: messId,
+      messName: sample.messName,
+      items: sample.items.map((item) => ({
+        menuItemId: `menu-${index}`,
+        name: item.name,
+        quantity: item.quantity,
+        tokensPerItem: item.tokensPerItem,
+      })),
+      totalTokens: sample.totalTokens,
+      status: sample.status,
+      orderType: sample.orderType,
+      deliveryRequested: sample.deliveryRequested,
+      createdAt: orderTime.toISOString(),
+    };
+  });
 };

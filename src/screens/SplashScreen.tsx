@@ -17,27 +17,29 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
     initializeApp();
   }, []);
 
+  useEffect(() => {
+    if (!isLoading) {
+      navigateAfterLoad();
+    }
+  }, [isLoading, user, role]);
+
   const initializeApp = async () => {
     try {
       // Initialize mock data
       await initializeMockData();
-
-      // Wait for auth to load
-      if (isLoading) {
-        return;
-      }
-
-      // Small delay for splash effect
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Navigate based on auth state
-      if (user && role) {
-        navigateToDashboard(role);
-      } else {
-        navigation.replace("RoleSelection");
-      }
     } catch (error) {
       console.error("Error initializing app:", error);
+    }
+  };
+
+  const navigateAfterLoad = async () => {
+    // Small delay for splash effect
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Navigate based on auth state
+    if (user && role) {
+      navigateToDashboard(role);
+    } else {
       navigation.replace("RoleSelection");
     }
   };
@@ -62,17 +64,15 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Ionicons name="restaurant" size={80} color={theme.colors.primary} />
+          <Ionicons name="restaurant" size={64} color={theme.colors.primary} />
         </View>
 
         <Text style={styles.title}>Mess Platform</Text>
         <Text style={styles.subtitle}>Your Campus Food Solution</Text>
 
-        <ActivityIndicator
-          size="large"
-          color={theme.colors.primary}
-          style={styles.loader}
-        />
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
       </View>
 
       <Text style={styles.footer}>Powered by Token System</Text>
@@ -93,30 +93,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconContainer: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: theme.colors.primaryLight,
+    width: 120,
+    height: 120,
+    borderRadius: 30,
+    backgroundColor: theme.colors.primaryMuted,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: theme.spacing.xl,
   },
   title: {
-    ...theme.typography.h1,
+    ...theme.typography.display,
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   subtitle: {
-    ...theme.typography.subtitle,
+    ...theme.typography.body,
     color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.xxxl,
   },
-  loader: {
+  loaderContainer: {
     marginTop: theme.spacing.xl,
   },
   footer: {
     ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.xl,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.xxxl,
   },
 });

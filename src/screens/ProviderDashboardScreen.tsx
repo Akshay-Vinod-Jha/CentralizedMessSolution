@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../utils/theme";
 import { useAuth } from "../context/AuthContext";
+import { defaultUserData } from "../utils/mockData";
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -17,29 +19,46 @@ type Props = {
 
 export const ProviderDashboardScreen: React.FC<Props> = ({ navigation }) => {
   const { user, logout } = useAuth();
+  const [preOrders] = useState(defaultUserData.provider.samplePreOrders);
+  const [recentOrders] = useState(defaultUserData.provider.recentOrders);
+  const providerStats = defaultUserData.provider.stats;
 
   const handleLogout = async () => {
     await logout();
     navigation.replace("RoleSelection");
   };
 
+  const handleFeatureClick = (featureTitle: string) => {
+    const navigationMap: { [key: string]: string } = {
+      "Manage Availability": "ManageAvailability",
+      "View Pre-orders": "ViewPreOrders",
+      "Set Pricing": "SetPricing",
+      "Delivery Schedule": "DeliverySchedule",
+    };
+
+    const screenName = navigationMap[featureTitle];
+    if (screenName) {
+      navigation.navigate(screenName);
+    }
+  };
+
   const stats = [
     {
       icon: "cube",
       label: "Available Meals",
-      value: "12",
+      value: providerStats.availableMeals.toString(),
       color: theme.colors.primary,
     },
     {
       icon: "receipt",
       label: "Pre-orders",
-      value: "5",
+      value: providerStats.preOrders.toString(),
       color: theme.colors.warning,
     },
     {
       icon: "wallet",
       label: "Tokens Earned",
-      value: "85",
+      value: providerStats.tokensEarned.toString(),
       color: theme.colors.accent,
     },
   ];
@@ -120,6 +139,7 @@ export const ProviderDashboardScreen: React.FC<Props> = ({ navigation }) => {
                 key={index}
                 style={styles.featureCard}
                 activeOpacity={0.7}
+                onPress={() => handleFeatureClick(feature.title)}
               >
                 <View
                   style={[
@@ -142,6 +162,90 @@ export const ProviderDashboardScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
+        {/* Pre-Orders */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Today's Pre-Orders</Text>
+          {preOrders.map((order) => (
+            <View key={order.id} style={styles.orderCard}>
+              <View style={styles.orderHeader}>
+                <View style={styles.studentInfo}>
+                  <Ionicons
+                    name="person-circle"
+                    size={40}
+                    color={theme.colors.primary}
+                  />
+                  <View style={styles.studentDetails}>
+                    <Text style={styles.studentName}>{order.studentName}</Text>
+                    <Text style={styles.deliveryTime}>
+                      Delivery: {order.deliveryTime}
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    {
+                      backgroundColor:
+                        order.status === "confirmed"
+                          ? theme.colors.success + "20"
+                          : theme.colors.warning + "20",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusText,
+                      {
+                        color:
+                          order.status === "confirmed"
+                            ? theme.colors.success
+                            : theme.colors.warning,
+                      },
+                    ]}
+                  >
+                    {order.status.toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.orderDetails}>
+                <Text style={styles.mealName}>
+                  • {order.meal} x{order.quantity}
+                </Text>
+                <Text style={styles.orderTokens}>{order.tokens} tokens</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Recent Completed Orders */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Completed Orders</Text>
+          {recentOrders.map((order) => (
+            <View key={order.id} style={styles.completedOrderCard}>
+              <View style={styles.completedOrderHeader}>
+                <Text style={styles.studentName}>{order.studentName}</Text>
+                <Text style={styles.deliveryDate}>{order.deliveredAt}</Text>
+              </View>
+              <View style={styles.completedOrderDetails}>
+                <Text style={styles.mealName}>{order.meal}</Text>
+                <View style={styles.ratingRow}>
+                  <Ionicons
+                    name="star"
+                    size={16}
+                    color={theme.colors.warning}
+                  />
+                  <Text style={styles.ratingText}>{order.rating}/5</Text>
+                  <Text style={styles.orderTokens}>
+                    {" "}
+                    • {order.tokens} tokens
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+
         {/* Info Card */}
         <View style={styles.infoCard}>
           <Ionicons name="bulb" size={32} color={theme.colors.warning} />
@@ -150,22 +254,6 @@ export const ProviderDashboardScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.infoText}>
               List extra meals daily and accept pre-orders from students. Use
               the token system for flexible payments.
-            </Text>
-          </View>
-        </View>
-
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Orders</Text>
-          <View style={styles.emptyState}>
-            <Ionicons
-              name="restaurant-outline"
-              size={64}
-              color={theme.colors.textLight}
-            />
-            <Text style={styles.emptyText}>No recent orders</Text>
-            <Text style={styles.emptySubtext}>
-              Orders will appear here when students place them
             </Text>
           </View>
         </View>
@@ -295,21 +383,88 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: 20,
   },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: theme.spacing.xxl,
+  orderCard: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.small,
   },
-  emptyText: {
+  orderHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: theme.spacing.sm,
+  },
+  studentInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  studentDetails: {
+    marginLeft: theme.spacing.sm,
+  },
+  studentName: {
     ...theme.typography.subtitle,
-    color: theme.colors.textSecondary,
-    marginTop: theme.spacing.md,
+    color: theme.colors.text,
+    fontWeight: "600",
   },
-  emptySubtext: {
+  deliveryTime: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+  },
+  statusBadge: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+  },
+  statusText: {
+    ...theme.typography.caption,
+    fontWeight: "600",
+  },
+  orderDetails: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: theme.spacing.sm,
+  },
+  mealName: {
     ...theme.typography.body,
-    color: theme.colors.textLight,
+    color: theme.colors.text,
+    flex: 1,
+  },
+  orderTokens: {
+    ...theme.typography.subtitle,
+    color: theme.colors.accent,
+    fontWeight: "600",
+  },
+  completedOrderCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    ...theme.shadows.small,
+  },
+  completedOrderHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing.xs,
+  },
+  deliveryDate: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+  },
+  completedOrderDetails: {
     marginTop: theme.spacing.xs,
-    textAlign: "center",
+  },
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: theme.spacing.xs,
+  },
+  ratingText: {
+    ...theme.typography.caption,
+    color: theme.colors.text,
+    marginLeft: theme.spacing.xs,
   },
 });

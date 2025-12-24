@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { Platform, UIManager } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+
+// Import global CSS for web to remove weird highlights
+if (Platform.OS === "web") {
+  require("./global.css");
+}
 
 // Context Providers
 import { AuthProvider } from "./src/context/AuthContext";
@@ -12,6 +18,7 @@ import { OrderProvider } from "./src/context/OrderContext";
 // Screens
 import { SplashScreen } from "./src/screens/SplashScreen";
 import { RoleSelectionScreen } from "./src/screens/RoleSelectionScreen";
+import { RoleDetailsScreen } from "./src/screens/RoleDetailsScreen";
 import { StudentDashboardScreen } from "./src/screens/StudentDashboardScreen";
 import { MessDiscoveryScreen } from "./src/screens/MessDiscoveryScreen";
 import { MessDetailsScreen } from "./src/screens/MessDetailsScreen";
@@ -23,10 +30,24 @@ import { DeliveryRequestScreen } from "./src/screens/DeliveryRequestScreen";
 import { MessOwnerDashboardScreen } from "./src/screens/MessOwnerDashboardScreen";
 import { MenuManagementScreen } from "./src/screens/MenuManagementScreen";
 import { ProviderDashboardScreen } from "./src/screens/ProviderDashboardScreen";
+import { ManageAvailabilityScreen } from "./src/screens/ManageAvailabilityScreen";
+import { ViewPreOrdersScreen } from "./src/screens/ViewPreOrdersScreen";
+import { SetPricingScreen } from "./src/screens/SetPricingScreen";
+import { DeliveryScheduleScreen } from "./src/screens/DeliveryScheduleScreen";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  useEffect(() => {
+    // Enable layout animations on Android
+    if (
+      Platform.OS === "android" &&
+      UIManager.setLayoutAnimationEnabledExperimental
+    ) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AuthProvider>
@@ -45,6 +66,10 @@ export default function App() {
                 <Stack.Screen
                   name="RoleSelection"
                   component={RoleSelectionScreen}
+                />
+                <Stack.Screen
+                  name="RoleDetails"
+                  component={RoleDetailsScreen}
                 />
 
                 {/* Student Screens */}
@@ -92,6 +117,19 @@ export default function App() {
                 <Stack.Screen
                   name="ProviderDashboard"
                   component={ProviderDashboardScreen}
+                />
+                <Stack.Screen
+                  name="ManageAvailability"
+                  component={ManageAvailabilityScreen}
+                />
+                <Stack.Screen
+                  name="ViewPreOrders"
+                  component={ViewPreOrdersScreen}
+                />
+                <Stack.Screen name="SetPricing" component={SetPricingScreen} />
+                <Stack.Screen
+                  name="DeliverySchedule"
+                  component={DeliveryScheduleScreen}
                 />
               </Stack.Navigator>
             </NavigationContainer>
